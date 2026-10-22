@@ -60,6 +60,19 @@ We recommend you keep the EasyRead extension always displayed in the toolbar, yo
 3. Supports two recovery modes: replace storage and merge storage.
 4. Support the purpose of deleting all data and some data to save space.
 
+## Cloud Sync
+
+Back up Read Later, notes and browsing history to a server you control, and sync them across devices.
+
+1. Deploy the backend — https://github.com/oishijie/easyread-sync (Cloudflare Workers + D1 + R2).
+2. Open the extension settings and go to the **Cloud Sync** tab.
+3. Enter the backend address, create an account, and turn the switch on.
+
+Nothing is sent anywhere else: the extension only talks to the address you enter. Cloud sync stays off until you enable it, and your data remains in the browser otherwise.
+
+> This copy adds cloud sync on top of upstream v2.0.0. Everything else is unchanged from
+> [volnet/chrome-extensions-easyread](https://github.com/volnet/chrome-extensions-easyread), Apache-2.0.
+
 ## Installation
 
 ### 01 Add-ons Store(Recommend)

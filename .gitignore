@@ -134,3 +134,5 @@ output
 
 # chrome-extensions
 key.pem
+# 本地发布脚本（含凭据处理逻辑，不入库）
+publish.sh
