@@ -181,6 +181,12 @@
   "screenshot_format_description": {
     "message": "保存截图时使用此格式。复制到剪贴板始终使用 PNG，以兼容浏览器。"
   },
+  "setting_snapshot_upload_label": {
+    "message": "把保存的网页上传到云端"
+  },
+  "setting_snapshot_upload_description": {
+    "message": "保存 HTML、Markdown 和截图时，除了本地下载，还会把文件上传到你自己的同步服务器（R2，单个文件最大 15 MB）。PDF 由浏览器打印对话框生成，不会上传。"
+  },
   "screenshot_copy_viewport": {
     "message": "复制窗口"
   },
@@ -834,6 +840,14 @@
     "message": "副本已生成并开始下载。",
     "description": "成功提示。"
   },
+  "capture_status_uploaded": {
+    "message": "副本已下载，并已上传到你的服务器。",
+    "description": "含云端上传的成功提示。"
+  },
+  "capture_status_upload_failed": {
+    "message": "副本已下载，但上传到云端失败。请检查同步设置。",
+    "description": "本地保存成功、云端上传失败。"
+  },
   "capture_status_partial": {
     "message": "副本已下载，但部分受保护或无法访问的资源仍保持外部引用。",
     "description": "部分完成提示。"
@@ -1017,6 +1031,10 @@
   "capture_stage_downloading": {
     "message": "文件已经准备好，正在交给浏览器下载…",
     "description": "下载阶段。"
+  },
+  "capture_stage_uploading": {
+    "message": "正在把副本上传到你的服务器…",
+    "description": "云端上传阶段。"
   },
   "capture_stage_print_dialog": {
     "message": "正在打开浏览器打印窗口…",

@@ -52,6 +52,10 @@
         <select id="screenshotFormat"><option value="png">PNG</option><option value="jpeg">JPG</option></select>
         <p id="screenshotFormatDescription" class="helpText"></p>
       </div>
+      <div class="settingBlock settingToggleBlock">
+        <div><strong id="snapshotUploadLabel"></strong><p id="snapshotUploadDescription" class="helpText"></p></div>
+        <label class="modernSwitch"><input type="checkbox" id="snapshotUploadEnabled" aria-labelledby="snapshotUploadLabel" /><span aria-hidden="true"></span></label>
+      </div>
     </section>
     <section id="mediaPanel" class="settingsPanel" role="tabpanel" aria-labelledby="setting_tab_media" hidden>
       <div class="settingBlock mediaAutoplayRow"><label id="mediaAutoplayLabel" for="mediaAutoplay"></label><select id="mediaAutoplay"><option value="off" id="mediaAutoplayOff"></option><option value="sequential" id="mediaAutoplaySequential"></option><option value="simultaneous" id="mediaAutoplaySimultaneous"></option></select></div>

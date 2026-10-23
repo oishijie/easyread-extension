@@ -13,6 +13,15 @@ export const SYNC_ENABLED_NAME = "syncEnabled";
 export const SYNC_STATE_NAME = "syncState";
 export const SYNC_DIRTY_NAME = "syncDirty";
 export const FAVORITES_NAME = "favorites";
+export const SNAPSHOT_UPLOAD_NAME = "snapshotUploadEnabled";
+export const SNAPSHOT_UPLOAD_MAX_BYTES = 15 * 1024 * 1024;
+
+// 扩展侧保存类型 → 后端快照格式；PDF 走浏览器打印对话框、没有字节流，故不上传
+export function snapshotUploadFormat(captureType) {
+  if (captureType === "image") return "screenshot";
+  if (captureType === "html" || captureType === "markdown") return captureType;
+  return null;
+}
 
 export const UPDATE_STATUS_YES = 0;
 export const UPDATE_STATUS_NO = 1;

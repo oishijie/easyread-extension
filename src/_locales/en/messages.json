@@ -181,6 +181,12 @@
   "screenshot_format_description": {
     "message": "Used when saving screenshots. Clipboard copies always use PNG for browser compatibility."
   },
+  "setting_snapshot_upload_label": {
+    "message": "Upload saved pages to cloud storage"
+  },
+  "setting_snapshot_upload_description": {
+    "message": "Sends saved HTML, Markdown and screenshot files to your own sync server alongside the local download (R2, up to 15 MB each). PDF is produced by the browser print dialog and is not uploaded."
+  },
   "screenshot_copy_viewport": {
     "message": "Copy viewport"
   },
@@ -833,6 +839,14 @@
     "message": "The copy was prepared and downloaded.",
     "description": "Success status."
   },
+  "capture_status_uploaded": {
+    "message": "The copy was downloaded and uploaded to your server.",
+    "description": "Success status with cloud upload."
+  },
+  "capture_status_upload_failed": {
+    "message": "The copy was downloaded, but the cloud upload failed. Check the sync settings.",
+    "description": "Local save succeeded, cloud upload failed."
+  },
   "capture_status_partial": {
     "message": "The copy was downloaded, but some protected or inaccessible resources remain external.",
     "description": "Partial status."
@@ -1016,6 +1030,10 @@
   "capture_stage_downloading": {
     "message": "The file is ready and has been handed to the browser downloader…",
     "description": "Download stage."
+  },
+  "capture_stage_uploading": {
+    "message": "Uploading the copy to your server…",
+    "description": "Cloud upload stage."
   },
   "capture_stage_print_dialog": {
     "message": "Opening the browser print dialog…",

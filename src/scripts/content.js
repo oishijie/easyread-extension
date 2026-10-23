@@ -5,6 +5,7 @@ if (globalThis.__easyreadContentReady) return;
 const EASYREAD_ANNOTATION_HIGHLIGHT_NAME = "easyread-annotations";
 const EASYREAD_HIGHLIGHT_SETTING = "highlightsEnabled";
 const EASYREAD_NOTES_KEY = "notes";
+const EASYREAD_SNAPSHOT_UPLOAD_SETTING = "snapshotUploadEnabled";
 
 const EASYREAD_ANNOTATION_WIDTH_KEY = "annotationSidebarWidth";
 const EASYREAD_CONTEXT_LENGTH = 32;
@@ -1420,8 +1421,43 @@ async function runPopupCapture(type, options = {}) {
         report(92, (globalThis.EasyReadLocale || chrome.i18n).getMessage("capture_stage_downloading"));
         downloadCaptureBlob(blob, fileName);
         await recordArtifact(type, fileName, blob, integrity, details);
-        report(100, (globalThis.EasyReadLocale || chrome.i18n).getMessage(integrity === "partial" ? "capture_status_partial" : "capture_status_saved"));
+        const upload = await uploadCaptureSnapshot(type, blob, fileName, report).catch(() => null);
+        const statusKey = upload?.uploaded
+            ? "capture_status_uploaded"
+            : upload
+                ? "capture_status_upload_failed"
+                : (integrity === "partial" ? "capture_status_partial" : "capture_status_saved");
+        report(100, (globalThis.EasyReadLocale || chrome.i18n).getMessage(statusKey));
     }
+}
+
+async function blobToBase64(blob) {
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    // 分块拼接，避免大快照时 String.fromCharCode 超出参数上限
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    }
+    return btoa(binary);
+}
+
+// 返回 null 表示未开启上传（静默跳过），否则返回上传结果
+async function uploadCaptureSnapshot(type, blob, fileName, report) {
+    const stored = await chrome.storage.local.get([EASYREAD_SNAPSHOT_UPLOAD_SETTING]);
+    if (stored[EASYREAD_SNAPSHOT_UPLOAD_SETTING] !== true) return null;
+    report?.(96, (globalThis.EasyReadLocale || chrome.i18n).getMessage("capture_stage_uploading"));
+    const result = await sendRuntimeMessage({
+        command: "uploadSnapshot",
+        type,
+        dataBase64: await blobToBase64(blob),
+        fileName,
+        mimeType: blob.type,
+        url: location.href,
+        title: document.title
+    }).catch(() => null);
+    if (!result?.ok) return { uploaded: false, reason: result?.error || "failed" };
+    return { uploaded: true, id: result.id };
 }
 
 async function downloadMediaFromPopup(media, onProgress) {

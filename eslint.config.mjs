@@ -1,10 +1,13 @@
 const browserGlobals = {
   AbortController: "readonly",
   AbortSignal: "readonly",
+  atob: "readonly",
   Blob: "readonly",
   btoa: "readonly",
   ClipboardItem: "readonly",
+  File: "readonly",
   FileReader: "readonly",
+  FormData: "readonly",
   Node: "readonly",
   Highlight: "readonly",
   HTMLInputElement: "readonly",

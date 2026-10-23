@@ -1,10 +1,10 @@
 import './diagnostics.js';
 import * as easyReadTools from './easyReadTools.js';
-import { ALL_RECORDS_NAME, FAVORITES_NAME, NOTES_NAME, READ_LATERS_NAME, SYNC_ENABLED_NAME, applyVideoProgress, createTabNavigationTracker } from './easyReadData.mjs';
+import { ALL_RECORDS_NAME, FAVORITES_NAME, NOTES_NAME, READ_LATERS_NAME, SNAPSHOT_UPLOAD_MAX_BYTES, SYNC_ENABLED_NAME, applyVideoProgress, createTabNavigationTracker, snapshotUploadFormat } from './easyReadData.mjs';
 
 import { migrateNotes, notesOperation, withNotesLock } from './notesStore.mjs';
 import { sendPageMessage } from './pageConnection.mjs';
-import { cancelScheduledSync, getSyncConfig, isApplyingRemote, notifyLocalChange, pingEndpoint, signIn, signOut, syncNow } from './syncEngine.mjs';
+import { cancelScheduledSync, getSyncConfig, isApplyingRemote, notifyLocalChange, normalizeEndpoint, pingEndpoint, signIn, signOut, syncNow } from './syncEngine.mjs';
 
 // Also cover unpacked reloads / worker restarts where installation events may not fire.
 // Queue before RPCs; only Notes stores are migrated, all other user data stays untouched.
@@ -90,12 +90,62 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
 
 chrome.runtime.onStartup.addListener(() => {
   refreshSyncAlarm().catch(console.error);
-});
-chrome.runtime.onInstalled.addListener(() => {
+});chrome.runtime.onInstalled.addListener(() => {
   refreshSyncAlarm().catch(console.error);
 });
 
 /* -------- End cloud sync -------- */
+
+/* -------- Snapshot upload (R2) -------- */
+
+// 字节由 content script 传 base64 过来：content script 的跨域 fetch 会受页面 CSP/CORS 束缚，
+// 上传统一在 service worker 里做（用扩展自己的 host permission）。
+function base64ToBytes(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+chrome.runtime.onMessage.addListener((message, sender, reply) => {
+  if (message?.command !== 'uploadSnapshot') return;
+  if (sender.id !== chrome.runtime.id) { reply({ ok: false, error: 'Invalid upload sender' }); return; }
+  (async () => {
+    const format = snapshotUploadFormat(message.type);
+    if (!format) { reply({ ok: false, error: 'unsupported_format' }); return; }
+
+    const config = await getSyncConfig();
+    const endpoint = normalizeEndpoint(config.apiEndpoint);
+    if (!endpoint) { reply({ ok: false, error: 'no_endpoint' }); return; }
+    if (!config.token) { reply({ ok: false, error: 'not_logged_in' }); return; }
+
+    const bytes = base64ToBytes(message.dataBase64 || '');
+    if (!bytes.length) { reply({ ok: false, error: 'empty_file' }); return; }
+    if (bytes.length > SNAPSHOT_UPLOAD_MAX_BYTES) { reply({ ok: false, error: 'too_large' }); return; }
+
+    const form = new FormData();
+    form.append('file', new File([bytes], message.fileName || `snapshot.${format}`, { type: message.mimeType || 'application/octet-stream' }));
+    form.append('url', message.url || '');
+    form.append('title', message.title || '');
+    form.append('format', format);
+
+    const response = await fetch(`${endpoint}/api/snapshots/upload`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${config.token}` },
+      body: form
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      reply({ ok: false, error: `http_${response.status}`, detail: detail.slice(0, 200) });
+      return;
+    }
+    const data = await response.json().catch(() => null);
+    reply({ ok: true, id: data?.id || '' });
+  })().catch(error => reply({ ok: false, error: 'unknown', detail: String(error?.message || error) }));
+  return true;
+});
+
+/* -------- End snapshot upload -------- */
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
   if (message?.command !== 'easyreadNotes') return;

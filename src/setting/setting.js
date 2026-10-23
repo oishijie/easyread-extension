@@ -146,6 +146,7 @@ const highlightsToggle = document.getElementById('settingHighlightsEnabled');
 const annotationAuthorInput = document.getElementById('annotationAuthor');
 const diagnosticsToggle = document.getElementById('diagnosticsEnabled');
 const screenshotFormat = document.getElementById('screenshotFormat');
+const snapshotUploadToggle = document.getElementById('snapshotUploadEnabled');
 const mediaAutoplay = document.getElementById('mediaAutoplay');
 const mediaMuted = document.getElementById('mediaMuted');
 for (const control of [mediaAutoplay, mediaMuted]) control.addEventListener('change', () => run(async () => {
@@ -157,11 +158,12 @@ async function refreshPreferences() {
   const media = await chrome.storage.local.get(['mediaAutoplay', 'mediaMuted']);
   mediaAutoplay.value = ['sequential', 'simultaneous'].includes(media.mediaAutoplay) ? media.mediaAutoplay : 'off';
   mediaMuted.checked = media.mediaMuted !== false;
-  const stored = await chrome.storage.local.get([easyReadTools.HIGHLIGHTS_ENABLED_NAME, easyReadTools.ANNOTATION_AUTHOR_NAME, 'diagnosticsEnabled', 'captureImageFormat']);
+  const stored = await chrome.storage.local.get([easyReadTools.HIGHLIGHTS_ENABLED_NAME, easyReadTools.ANNOTATION_AUTHOR_NAME, 'diagnosticsEnabled', 'captureImageFormat', easyReadTools.SNAPSHOT_UPLOAD_NAME]);
   highlightsToggle.checked = stored[easyReadTools.HIGHLIGHTS_ENABLED_NAME] !== false;
   annotationAuthorInput.value = stored[easyReadTools.ANNOTATION_AUTHOR_NAME] ?? '';
   diagnosticsToggle.checked = stored.diagnosticsEnabled === true;
   screenshotFormat.value = stored.captureImageFormat === 'jpeg' ? 'jpeg' : 'png';
+  snapshotUploadToggle.checked = stored[easyReadTools.SNAPSHOT_UPLOAD_NAME] === true;
 }
 run(refreshPreferences);
 diagnosticsToggle.addEventListener('change', () => run(async () => {
@@ -172,6 +174,10 @@ screenshotFormat.addEventListener('change', () => run(async () => {
   try { await chrome.storage.local.set({ captureImageFormat: screenshotFormat.value }); }
   catch (error) { await refreshPreferences(); throw error; }
 }, screenshotFormat));
+snapshotUploadToggle.addEventListener('change', () => run(async () => {
+  try { await chrome.storage.local.set({ [easyReadTools.SNAPSHOT_UPLOAD_NAME]: snapshotUploadToggle.checked }); }
+  catch (error) { snapshotUploadToggle.checked = !snapshotUploadToggle.checked; throw error; }
+}, snapshotUploadToggle));
 let reportRevision = 0;
 async function refreshDiagnostics() {
   const revision = ++reportRevision;
@@ -460,6 +466,7 @@ const labels = {
   diagnosticsEmpty: 'diagnostics_empty', clearDiagnostics: 'diagnostics_clear',
   screenshotSettingsTitle: 'capture_png_title', screenshotFormatLabel: 'screenshot_format_label',
   screenshotFormatDescription: 'screenshot_format_description', mediaSettingsDescription: 'media_settings_description',
+  snapshotUploadLabel: 'setting_snapshot_upload_label', snapshotUploadDescription: 'setting_snapshot_upload_description',
   mediaAutoplayLabel: 'media_autoplay', mediaAutoplayOff: 'media_autoplay_off', mediaAutoplaySequential: 'media_autoplay_sequential', mediaAutoplaySimultaneous: 'media_autoplay_simultaneous', mediaMutedLabel: 'media_muted',
   readLaterUnreadTitle: 'read_later_unread', readLaterCompletedEmpty: 'read_later_completed_empty', readLaterCompletedPrevious: 'allrecords_page_previous', readLaterCompletedNext: 'allrecords_page_next',
   setting_tab_sync: 'setting_tab_sync', setting_page_notice_sync: 'setting_page_notice_sync',
