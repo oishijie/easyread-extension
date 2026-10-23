@@ -10,7 +10,7 @@ export function verifyBuildIcons(root) {
   for (const mode of ['development', 'production']) {
     const destination = join(root, 'dist', mode);
     const manifest = JSON.parse(readFileSync(join(destination, 'manifest.json'), 'utf8'));
-    assert.equal(manifest.version, '2.2.0');
+    assert.equal(manifest.version, '2.2.1');
     assert.equal(existsSync(join(destination, 'assets/logo-dev')), false);
     const blueHashes = new Set(readdirSync(join(root, 'src/assets/logo-dev')).map(file => blobHash(readFileSync(join(root, 'src/assets/logo-dev', file)))));
     for (const [size, originalHash] of Object.entries(orange)) {
