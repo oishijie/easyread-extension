@@ -13,6 +13,20 @@ export const SYNC_ENABLED_NAME = "syncEnabled";
 export const SYNC_STATE_NAME = "syncState";
 export const SYNC_DIRTY_NAME = "syncDirty";
 export const FAVORITES_NAME = "favorites";
+
+// 保存网页面板条目的顺序：未知键丢弃，未记录过的键（版本升级新增）补到末尾
+export function orderSaveKeys(storedOrder, availableKeys) {
+  const available = Array.isArray(availableKeys) ? availableKeys : [];
+  const known = new Set(available);
+  const ordered = [];
+  for (const key of Array.isArray(storedOrder) ? storedOrder : []) {
+    if (known.has(key) && !ordered.includes(key)) ordered.push(key);
+  }
+  for (const key of available) {
+    if (!ordered.includes(key)) ordered.push(key);
+  }
+  return ordered;
+}
 export const SNAPSHOT_UPLOAD_NAME = "snapshotUploadEnabled";
 export const SNAPSHOT_UPLOAD_MAX_BYTES = 15 * 1024 * 1024;
 

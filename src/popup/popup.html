@@ -79,14 +79,14 @@
 		</section>
 		<section id="panelSavePage" class="popupPanel" role="tabpanel" aria-labelledby="tabSavePage" hidden>
 			<div class="saveOptions">
-				<div class="saveOption"><span class="saveIcon">HTML</span><span><strong id="saveHtmlTitle"></strong></span><div class="saveActions"><button class="primarySave" data-capture="html"></button></div></div>
-				<div class="saveOption"><span class="saveIcon">PDF</span><span><strong id="savePdfTitle"></strong></span><div class="saveActions"><button class="primarySave" data-capture="pdf"></button></div></div>
-				<div class="saveOptionGroup">
-					<div class="saveOptionHeading"><span class="saveIcon">IMG</span><span><strong id="saveImageTitle"></strong></span></div>
+				<div class="saveOption" data-save-key="html"><span class="saveIcon" draggable="true">HTML</span><span><strong id="saveHtmlTitle"></strong></span><div class="saveActions"><button class="primarySave" data-capture="html"></button></div></div>
+				<div class="saveOption" data-save-key="pdf"><span class="saveIcon" draggable="true">PDF</span><span><strong id="savePdfTitle"></strong></span><div class="saveActions"><button class="primarySave" data-capture="pdf"></button></div></div>
+				<div class="saveOptionGroup" data-save-key="image">
+					<div class="saveOptionHeading"><span class="saveIcon" draggable="true">IMG</span><span><strong id="saveImageTitle"></strong></span></div>
 					<div class="saveActions screenshotActions"><button class="secondarySave" data-copy="image" data-scope="viewport" data-label="screenshot_copy_viewport"></button><button class="secondarySave" data-copy="image" data-scope="fullPage" data-label="screenshot_copy_full"></button><button class="primarySave" data-capture="image" data-scope="viewport" data-label="screenshot_save_viewport"></button><button class="primarySave" data-capture="image" data-scope="fullPage" data-label="screenshot_save_full"></button></div>
 				</div>
-				<div class="saveOption"><span class="saveIcon">MD</span><span><strong id="saveMarkdownTitle"></strong></span><div class="saveActions"><button class="secondarySave" data-copy="markdown" id="copyMarkdownAction"></button><button class="primarySave" data-capture="markdown"></button></div></div>
-				<div class="saveOption"><span class="saveIcon">LINK</span><span><strong id="saveLinkTitle"></strong></span><div class="saveActions"><button class="secondarySave" id="copyLinkAction" type="button"></button><button class="primarySave" id="saveLinkAction" type="button"></button></div></div>
+				<div class="saveOption" data-save-key="markdown"><span class="saveIcon" draggable="true">MD</span><span><strong id="saveMarkdownTitle"></strong></span><div class="saveActions"><button class="secondarySave" data-copy="markdown" id="copyMarkdownAction"></button><button class="primarySave" data-capture="markdown"></button></div></div>
+				<div class="saveOption" data-save-key="link"><span class="saveIcon" draggable="true">LINK</span><span><strong id="saveLinkTitle"></strong></span><div class="saveActions"><button class="secondarySave" id="copyLinkAction" type="button"></button><button class="primarySave" id="saveLinkAction" type="button"></button></div></div>
 			</div>
 			<div id="captureTask" class="taskFeedback" hidden><div class="taskMeta"><strong id="captureTaskTitle"></strong><span id="captureTaskPercent"></span></div><progress id="captureProgress" max="100" value="0"></progress><p id="captureTaskStage"></p></div>
 		</section>

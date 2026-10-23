@@ -1,6 +1,6 @@
 import "../scripts/diagnostics.js";
 import * as easyReadTools from "../scripts/easyReadTools.js";
-import { FAVORITES_NAME, SYNC_CONFIG_NAME, createFavoriteUpdate, removeFavoriteEntry } from '../scripts/easyReadData.mjs';
+import { FAVORITES_NAME, SYNC_CONFIG_NAME, createFavoriteUpdate, orderSaveKeys, removeFavoriteEntry } from '../scripts/easyReadData.mjs';
 import { initializeTabs } from '../scripts/ui.js';
 import { sendPageMessage } from '../scripts/pageConnection.mjs';
 import { initializePopupAnnotations, renderPopupAnnotations } from './popupAnnotations.mjs';
@@ -873,6 +873,81 @@ function onPageLoad_InitTopMenuBar() {
   });
 }
 
+/* -------- Save page option order -------- */
+
+const SAVE_OPTION_ORDER_NAME = 'saveOptionOrder';
+
+function saveOptionContainer() {
+  return document.querySelector('#panelSavePage > .saveOptions');
+}
+
+function saveOptionItems() {
+  const container = saveOptionContainer();
+  return container ? [...container.children].filter(child => child.dataset.saveKey) : [];
+}
+
+async function applySaveOptionOrder() {
+  const container = saveOptionContainer();
+  if (!container) return;
+  const stored = await chrome.storage.local.get(SAVE_OPTION_ORDER_NAME);
+  const items = saveOptionItems();
+  const byKey = new Map(items.map(item => [item.dataset.saveKey, item]));
+  for (const key of orderSaveKeys(stored[SAVE_OPTION_ORDER_NAME], items.map(item => item.dataset.saveKey))) {
+    container.appendChild(byKey.get(key));
+  }
+}
+
+// 拖动把手放在左侧图标上，避免整卡可拖时按钮被误拖成排序
+function initializeSaveOptionReorder() {
+  const container = saveOptionContainer();
+  if (!container) return;
+  let dragged = null;
+
+  container.addEventListener('dragstart', event => {
+    const item = event.target.closest?.('[data-save-key]');
+    if (!item || !container.contains(item)) return;
+    dragged = item;
+    item.classList.add('isDragging');
+    event.dataTransfer.effectAllowed = 'move';
+    // 部分浏览器不 setData 就不触发拖拽
+    event.dataTransfer.setData('text/plain', item.dataset.saveKey);
+  });
+
+  container.addEventListener('dragover', event => {
+    if (!dragged) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const target = event.target.closest?.('[data-save-key]');
+    if (!target || target === dragged || !container.contains(target)) return;
+    const rect = target.getBoundingClientRect();
+    const insertAfter = event.clientY > rect.top + rect.height / 2;
+    container.insertBefore(dragged, insertAfter ? target.nextElementSibling : target);
+  });
+
+  container.addEventListener('drop', event => {
+    if (dragged) event.preventDefault();
+  });
+
+  container.addEventListener('dragend', async () => {
+    if (!dragged) return;
+    dragged.classList.remove('isDragging');
+    dragged = null;
+    await chrome.storage.local.set({ [SAVE_OPTION_ORDER_NAME]: saveOptionItems().map(item => item.dataset.saveKey) });
+  });
+}
+
+async function initializeSavePageOptions() {
+  const hint = easyReadTools.getMessageForLocales('save_options_reorder_hint');
+  for (const item of saveOptionItems()) {
+    const handle = item.querySelector('.saveIcon');
+    if (!handle) continue;
+    handle.setAttribute('title', hint);
+    handle.setAttribute('aria-label', hint);
+  }
+  await applySaveOptionOrder();
+  initializeSaveOptionReorder();
+}
+
 /* -------- ReadLaters -------- */
 
 async function renderReadLaters(queryValue, context) {
@@ -1238,6 +1313,7 @@ async function onPageLoad_InitAllRecords() {
   onPageLoad_InitTopMenuBar();
   onPageLoad_InitReadLaters();
   onPageLoad_InitFavorites();
+  initializeSavePageOptions().catch(error => showMessages(error.message));
 
   onPageLoad_InitAllRecords();
   initializeWorkspaceTabs();

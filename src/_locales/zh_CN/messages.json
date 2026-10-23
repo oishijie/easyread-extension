@@ -184,6 +184,9 @@
   "setting_snapshot_upload_label": {
     "message": "把保存的网页上传到云端"
   },
+  "save_options_reorder_hint": {
+    "message": "拖动可调整顺序"
+  },
   "setting_snapshot_upload_description": {
     "message": "保存 HTML、Markdown 和截图时，除了本地下载，还会把文件上传到你自己的同步服务器（R2，单个文件最大 15 MB）。PDF 由浏览器打印对话框生成，不会上传。"
   },
