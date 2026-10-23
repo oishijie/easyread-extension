@@ -397,8 +397,48 @@
       }
     }
   },
-  "popup_btn_read_later_text": {
-    "message": "Read Later",
+  "popup_page_total_favorites": {
+    "message": "Saved links: $total_favorites$",
+    "description": "The saved links title in the popup.",
+    "placeholders": {
+      "total_favorites": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "capture_link_title": {
+    "message": "Link",
+    "description": "Link row title in the save page panel."
+  },
+  "capture_action_copy_link": {
+    "message": "Copy link",
+    "description": "Copy the current page link to the clipboard."
+  },
+  "capture_action_collect": {
+    "message": "Collect",
+    "description": "Save the current page link to the favorites list."
+  },
+  "popup_link_copied": {
+    "message": "Link copied."
+  },
+  "popup_favorite_added": {
+    "message": "Link saved."
+  },
+  "popup_favorite_duplicate": {
+    "message": "This link is already saved."
+  },
+  "popup_favorite_removed": {
+    "message": "Saved link removed."
+  },
+  "popup_favorite_missing": {
+    "message": "That link is no longer saved."
+  },
+  "popup_favorite_remove_title": {
+    "message": "Remove",
+    "description": "Remove button title in the saved links list."
+  },
+  "popup_btn_read_later_text": {    "message": "Read Later",
     "description": "The read later button text."
   },
   "popup_page_notes_title": {

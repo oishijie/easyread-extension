@@ -28,6 +28,12 @@
 		<p class="message">Message</p>
 		<p class="readedTimes">ReadedTimes</p>
 	</template>
+	<template id="templateFavorite">
+		<li>
+			<a href="" target="_blank" title="Page Title">Page Title</a>
+			<button type="button" class="favoriteRemove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+		</li>
+	</template>
 	<div class="popupShell">
 		<div class="buttonLineWrapper">
 			<div class="brand"><img src="../assets/logo/icon-32.png" alt="" /><div id="popupTitle" class="extensionTitle">EasyRead</div></div>
@@ -58,6 +64,11 @@
 			<ol></ol>
 			<p id="readLaterEmpty" class="subtleEmpty" hidden></p>
 		</div>
+		<div id="outputFavorites" class="outputFavorites">
+			<span id="titleFavorites" class="titleReadLaters"></span>
+			<ol></ol>
+			<p id="favoritesEmpty" class="subtleEmpty" hidden></p>
+		</div>
 		<div>
 			<hr />
 		</div>
@@ -77,6 +88,7 @@
 					<div class="saveActions screenshotActions"><button class="secondarySave" data-copy="image" data-scope="viewport" data-label="screenshot_copy_viewport"></button><button class="secondarySave" data-copy="image" data-scope="fullPage" data-label="screenshot_copy_full"></button><button class="primarySave" data-capture="image" data-scope="viewport" data-label="screenshot_save_viewport"></button><button class="primarySave" data-capture="image" data-scope="fullPage" data-label="screenshot_save_full"></button></div>
 				</div>
 				<div class="saveOption"><span class="saveIcon">MD</span><span><strong id="saveMarkdownTitle"></strong></span><div class="saveActions"><button class="secondarySave" data-copy="markdown" id="copyMarkdownAction"></button><button class="primarySave" data-capture="markdown"></button></div></div>
+				<div class="saveOption"><span class="saveIcon">LINK</span><span><strong id="saveLinkTitle"></strong></span><div class="saveActions"><button class="secondarySave" id="copyLinkAction" type="button"></button><button class="primarySave" id="saveLinkAction" type="button"></button></div></div>
 			</div>
 			<div id="captureTask" class="taskFeedback" hidden><div class="taskMeta"><strong id="captureTaskTitle"></strong><span id="captureTaskPercent"></span></div><progress id="captureProgress" max="100" value="0"></progress><p id="captureTaskStage"></p></div>
 		</section>

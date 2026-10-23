@@ -1,6 +1,6 @@
 import "../scripts/diagnostics.js";
 import * as easyReadTools from "../scripts/easyReadTools.js";
-import { SYNC_CONFIG_NAME } from '../scripts/easyReadData.mjs';
+import { FAVORITES_NAME, SYNC_CONFIG_NAME, createFavoriteUpdate, removeFavoriteEntry } from '../scripts/easyReadData.mjs';
 import { initializeTabs } from '../scripts/ui.js';
 import { sendPageMessage } from '../scripts/pageConnection.mjs';
 import { initializePopupAnnotations, renderPopupAnnotations } from './popupAnnotations.mjs';
@@ -820,7 +820,7 @@ async function initializeWorkspaceTabs() {
   if (!tab) {
     badge.hidden = true;
     badge.textContent = "";
-    document.querySelectorAll('[data-capture], [data-copy], #btnReadLater').forEach(button => button.disabled = true);
+    document.querySelectorAll('[data-capture], [data-copy], #btnReadLater, #copyLinkAction, #saveLinkAction').forEach(button => button.disabled = true);
     renderMediaItems();
     return;
   }
@@ -1004,6 +1004,96 @@ function updateStorageCallback_ReadLaterRemove(queryValue, context) {
   }
 }
 
+/* -------- Favorites (saved links) -------- */
+
+async function renderFavorites() {
+  const stored = await chrome.storage.local.get(FAVORITES_NAME);
+  const list = Array.isArray(stored[FAVORITES_NAME]) ? stored[FAVORITES_NAME] : [];
+  const template = document.getElementById('templateFavorite');
+  const elements = list.map(item => {
+    const element = template.content.firstElementChild.cloneNode(true);
+    const link = element.querySelector('a');
+    const label = item.title || item.url || item.key;
+    link.textContent = label;
+    if (easyReadTools.isSupportedScheme(item.url)) link.href = item.url;
+    else link.removeAttribute('href');
+    link.setAttribute('title', label);
+
+    const remove = element.querySelector('.favoriteRemove');
+    const removeLabel = easyReadTools.getMessageForLocales('popup_favorite_remove_title');
+    remove.setAttribute('title', removeLabel);
+    remove.setAttribute('aria-label', `${removeLabel}: ${label}`);
+    remove.addEventListener('click', () => { removeFavorite(item.key).catch(error => showMessages(error.message)); });
+    return element;
+  });
+  document.querySelector('#outputFavorites ol').replaceChildren(...elements);
+  document.getElementById('favoritesEmpty').hidden = list.length > 0;
+  document.getElementById('titleFavorites').textContent = easyReadTools.getMessageForLocales('popup_page_total_favorites', [list.length]);
+}
+
+async function copyCurrentLink() {
+  const tab = await getActiveSupportedTab();
+  if (!tab) return;
+  try {
+    await navigator.clipboard.writeText(tab.url);
+    showMessages(easyReadTools.getMessageForLocales('popup_link_copied'));
+  } catch (error) {
+    showMessages(error?.message || String(error));
+  }
+}
+
+async function collectCurrentLink() {
+  const tab = await getActiveSupportedTab();
+  if (!tab) return;
+  let message = '';
+  await easyReadTools.updateStorageJsonData(
+    easyReadTools.keyChainGenerate([FAVORITES_NAME]),
+    (queryValue) => {
+      const result = createFavoriteUpdate(queryValue, {
+        storageKey: FAVORITES_NAME,
+        tab,
+        now: Date.now,
+        messages: {
+          added: easyReadTools.getMessageForLocales('popup_favorite_added'),
+          duplicate: easyReadTools.getMessageForLocales('popup_favorite_duplicate')
+        }
+      });
+      message = result.message;
+      return result;
+    });
+  showMessages(message);
+  await renderFavorites();
+}
+
+async function removeFavorite(pageKey) {
+  let message = '';
+  await easyReadTools.updateStorageJsonData(
+    easyReadTools.keyChainGenerate([FAVORITES_NAME]),
+    (queryValue) => {
+      const result = removeFavoriteEntry(queryValue, {
+        storageKey: FAVORITES_NAME,
+        pageKey,
+        messages: {
+          removed: easyReadTools.getMessageForLocales('popup_favorite_removed'),
+          missing: easyReadTools.getMessageForLocales('popup_favorite_missing')
+        }
+      });
+      message = result.message;
+      return result;
+    });
+  showMessages(message);
+  await renderFavorites();
+}
+
+function onPageLoad_InitFavorites() {
+  document.getElementById('saveLinkTitle').textContent = easyReadTools.getMessageForLocales('capture_link_title');
+  document.getElementById('copyLinkAction').textContent = easyReadTools.getMessageForLocales('capture_action_copy_link');
+  document.getElementById('saveLinkAction').textContent = easyReadTools.getMessageForLocales('capture_action_collect');
+  document.getElementById('copyLinkAction').addEventListener('click', () => { copyCurrentLink().catch(error => showMessages(error.message)); });
+  document.getElementById('saveLinkAction').addEventListener('click', () => { collectCurrentLink().catch(error => showMessages(error.message)); });
+  renderFavorites().catch(error => showMessages(error.message));
+}
+
 /* -------- Cloud sync button -------- */
 
 function onPageLoad_InitSyncButton() {
@@ -1148,6 +1238,7 @@ async function onPageLoad_InitAllRecords() {
   onPageLoad_InitTitle();
   onPageLoad_InitTopMenuBar();
   onPageLoad_InitReadLaters();
+  onPageLoad_InitFavorites();
 
   onPageLoad_InitAllRecords();
   initializeWorkspaceTabs();
@@ -1156,4 +1247,5 @@ async function onPageLoad_InitAllRecords() {
 // Keep the open popup current when the background records a visit after it loads.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes[easyReadTools.ALL_RECORDS_NAME]) onPageLoad_InitAllRecords();
+  if (area === 'local' && changes[FAVORITES_NAME]) renderFavorites().catch(error => showMessages(error.message));
 });

@@ -18,7 +18,7 @@ html { width: 450px; height: 600px; overflow: hidden; border-radius: 0 0 20px 20
 #panelReadLater > .outputAllRecords { display: flex; flex-direction: column; position: relative; flex: 1 0 180px; min-height: 180px; }
 #outputAllRecords > .buttonWrapper { position: absolute; top: 14px; right: 14px; }
 #outputAllRecords .titleAllRecords { padding-right: 34px; }
-#panelSavePage > .saveOptions { display: grid; grid-template-rows: repeat(4, minmax(96px, 1fr)); flex: 1 0 auto; }
+#panelSavePage > .saveOptions { display: grid; grid-template-rows: repeat(5, minmax(72px, 1fr)); flex: 1 0 auto; }
 .saveOptions > * { flex-shrink: 0; }
 .saveOptions > :last-child { flex-grow: 1; }
 .saveOption, .saveOptionGroup, .outputReadLaters, .outputAllRecords, .popupMediaItem { box-shadow: 0 0 12px rgba(25,25,35,.045) !important; }
@@ -52,6 +52,15 @@ hr { border: 0; height: 0; margin: 10px 0; }
 .outputReadLaters a:hover { text-decoration: underline; }
 .outputReadLaters .progress { color: var(--er-muted); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .outputReadLaters .highlightLi { background: #f5f5f7; border-radius: 8px; }
+.outputFavorites { display: flow-root; margin-top: 10px; padding: 14px; border: 1px solid var(--er-line); border-radius: 15px; background: var(--er-surface); box-shadow: var(--er-shadow); }
+.outputFavorites ol { padding: 0; list-style: none; margin: 12px 0 0; max-height: 140px; overflow: auto; }
+.outputFavorites li { display: flex; align-items: center; gap: 9px; padding: 9px 5px; border-top: 1px solid #f0f0f2; }
+.outputFavorites li:first-child { border-top: 0; }
+.outputFavorites a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+.outputFavorites a:hover { text-decoration: underline; }
+.favoriteRemove { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 4px; border: 0; border-radius: 7px; background: transparent; color: var(--er-muted); }
+.favoriteRemove:hover { background: #ececf0; color: var(--er-ink); }
+.favoriteRemove svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
 .buttonWithIcon { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 5px 10px; border: 1px solid var(--er-line); border-radius: 9px; background: #fafafa; color: var(--er-ink); font-size: 12px; font-weight: 600; }
 .buttonWithIcon img { width: 14px; height: 14px; }
 .subtleEmpty { margin: 12px 0 4px; padding: 18px 14px; color: var(--er-muted); background: #f8f8fa; border-radius: 10px; text-align: center; font-size: 12px; }

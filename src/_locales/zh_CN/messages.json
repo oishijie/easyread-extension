@@ -397,6 +397,47 @@
       }
     }
   },
+  "popup_page_total_favorites": {
+    "message": "已收藏链接：$total_favorites$个",
+    "description": "The saved links title in the popup.",
+    "placeholders": {
+      "total_favorites": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "capture_link_title": {
+    "message": "链接",
+    "description": "Link row title in the save page panel."
+  },
+  "capture_action_copy_link": {
+    "message": "复制链接",
+    "description": "Copy the current page link to the clipboard."
+  },
+  "capture_action_collect": {
+    "message": "收藏",
+    "description": "Save the current page link to the favorites list."
+  },
+  "popup_link_copied": {
+    "message": "链接已复制。"
+  },
+  "popup_favorite_added": {
+    "message": "链接已收藏。"
+  },
+  "popup_favorite_duplicate": {
+    "message": "这个链接已经收藏过了。"
+  },
+  "popup_favorite_removed": {
+    "message": "已取消收藏。"
+  },
+  "popup_favorite_missing": {
+    "message": "这个链接已经不在收藏里了。"
+  },
+  "popup_favorite_remove_title": {
+    "message": "移除",
+    "description": "Remove button title in the saved links list."
+  },
   "popup_btn_read_later_text": {
     "message": "稍后阅读",
     "description": "The read later button text."

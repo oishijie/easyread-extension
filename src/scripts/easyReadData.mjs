@@ -12,6 +12,7 @@ export const SYNC_CONFIG_NAME = "syncConfig";
 export const SYNC_ENABLED_NAME = "syncEnabled";
 export const SYNC_STATE_NAME = "syncState";
 export const SYNC_DIRTY_NAME = "syncDirty";
+export const FAVORITES_NAME = "favorites";
 
 export const UPDATE_STATUS_YES = 0;
 export const UPDATE_STATUS_NO = 1;
@@ -256,6 +257,43 @@ export function createReadLaterUpdate(queryValue, context) {
   result.status = UPDATE_STATUS_YES;
   result.message = context.messages.added;
   return result;
+}
+
+export function createFavoriteUpdate(queryValue, context) {
+  const oldValue = queryValue[context.storageKey];
+  const key = normalizePageUrl(context.tab.url);
+  const list = Array.isArray(oldValue) ? oldValue : [];
+  const result = {
+    status: UPDATE_STATUS_NO,
+    value: null,
+    message: "",
+    callback_onUpdated: context.callbackOnUpdated
+  };
+
+  if (list.some((item) => item.key === key)) {
+    result.message = context.messages.duplicate;
+    return result;
+  }
+
+  result.value = [...list, {
+    key,
+    url: context.tab.url,
+    title: context.tab.title,
+    createDateTime: context.now()
+  }];
+  result.status = UPDATE_STATUS_YES;
+  result.message = context.messages.added;
+  return result;
+}
+
+export function removeFavoriteEntry(queryValue, context) {
+  const oldValue = queryValue[context.storageKey];
+  const list = Array.isArray(oldValue) ? oldValue : [];
+  const next = list.filter((item) => item.key !== context.pageKey);
+  if (next.length === list.length) {
+    return { status: UPDATE_STATUS_NO, value: null, message: context.messages.missing };
+  }
+  return { status: UPDATE_STATUS_YES, value: next, message: context.messages.removed };
 }
 
 export function createTabNavigationTracker() {
