@@ -32,6 +32,28 @@
   "sync_logout": {
     "message": "退出登录"
   },
+  "sync_test_connection": {
+    "message": "测试连接"
+  },
+  "popup_btn_sync_now": {
+    "message": "同步",
+    "description": "The popup read later panel."
+  },
+  "popup_sync_running": {
+    "message": "正在同步…"
+  },
+  "popup_sync_done": {
+    "message": "同步完成。"
+  },
+  "popup_sync_failed": {
+    "message": "同步失败："
+  },
+  "popup_sync_not_signed_in": {
+    "message": "请先在设置里登录云端同步。"
+  },
+  "sync_message_test_ok": {
+    "message": "连接正常（$1 毫秒）。"
+  },
   "sync_status_signed_out": {
     "message": "未登录。首次使用请先点「注册」创建账号，已有账号直接点「登录」。"
   },

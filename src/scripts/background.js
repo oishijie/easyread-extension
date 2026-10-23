@@ -4,7 +4,7 @@ import { ALL_RECORDS_NAME, NOTES_NAME, READ_LATERS_NAME, SYNC_ENABLED_NAME, appl
 
 import { migrateNotes, notesOperation, withNotesLock } from './notesStore.mjs';
 import { sendPageMessage } from './pageConnection.mjs';
-import { cancelScheduledSync, getSyncConfig, isApplyingRemote, notifyLocalChange, signIn, signOut, syncNow } from './syncEngine.mjs';
+import { cancelScheduledSync, getSyncConfig, isApplyingRemote, notifyLocalChange, pingEndpoint, signIn, signOut, syncNow } from './syncEngine.mjs';
 
 // Also cover unpacked reloads / worker restarts where installation events may not fire.
 // Queue before RPCs; only Notes stores are migrated, all other user data stays untouched.
@@ -75,6 +75,9 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
         reply({ ok: true, result });
         return;
       }
+      case 'ping':
+        reply({ ok: true, result: await pingEndpoint(message.apiEndpoint) });
+        return;
       case 'config':
         reply({ ok: true, config: await getSyncConfig() });
         return;

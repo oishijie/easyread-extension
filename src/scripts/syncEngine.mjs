@@ -11,7 +11,7 @@ import {
 import { applyRemoteNotes } from './notesStore.mjs';
 
 const DEFAULT_CONFIG = { apiEndpoint: '', token: '', userId: '', email: '', lastSyncAt: 0 };
-const REQUEST_TIMEOUT_MS = 20000;
+const REQUEST_TIMEOUT_MS = 12000;
 const DEBOUNCE_MS = 5000;
 // 拉取会写本地存储，期间触发的 onChanged 不应再算作本地改动，否则会自激同步。
 const APPLY_SUPPRESS_MS = 2000;
@@ -63,23 +63,40 @@ async function request(config, path, options = {}) {
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let response;
   try {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
     if (config.token) headers.Authorization = `Bearer ${config.token}`;
-    const response = await fetch(`${endpoint}${path}`, { ...options, headers, signal: controller.signal });
-    const text = await response.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-    if (!response.ok) {
-      throw Object.assign(new Error(data?.message || data?.error || `HTTP ${response.status}`), {
-        code: response.status === 401 ? 'unauthorized' : (data?.error || `http_${response.status}`),
-        status: response.status
-      });
+    response = await fetch(`${endpoint}${path}`, { ...options, headers, signal: controller.signal });
+  } catch (error) {
+    // 超时和连不上要分开报，否则用户没法判断是网络还是服务端
+    if (controller.signal.aborted) {
+      throw Object.assign(new Error(`${endpoint} 在 ${REQUEST_TIMEOUT_MS / 1000} 秒内没有响应`), { code: 'timeout' });
     }
-    return data;
+    throw Object.assign(new Error(`${error?.message || 'Network error'}（${endpoint}）`), { code: 'network' });
   } finally {
     clearTimeout(timer);
   }
+
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!response.ok) {
+    throw Object.assign(new Error(data?.message || data?.error || `HTTP ${response.status}`), {
+      code: response.status === 401 ? 'unauthorized' : (data?.error || `http_${response.status}`),
+      status: response.status
+    });
+  }
+  return data;
+}
+
+// 只探连通性，不涉登录，用来把「网络不通」和「账号不对」区分开
+export async function pingEndpoint(apiEndpoint) {
+  const endpoint = normalizeEndpoint(apiEndpoint);
+  if (!endpoint) throw Object.assign(new Error('No endpoint'), { code: 'no_endpoint' });
+  const started = Date.now();
+  const data = await request({ apiEndpoint: endpoint, token: '' }, '/health', { method: 'GET' });
+  return { latency: Date.now() - started, healthy: data?.status === 'ok' };
 }
 
 export async function signIn({ apiEndpoint, email, password, register = false }) {

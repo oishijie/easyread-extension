@@ -1004,9 +1004,43 @@ function updateStorageCallback_ReadLaterRemove(queryValue, context) {
   }
 }
 
+/* -------- Cloud sync button -------- */
+
+function onPageLoad_InitSyncButton() {
+  const label = document.getElementById('btnSyncNowText');
+  label.textContent = easyReadTools.getMessageForLocales('popup_btn_sync_now');
+
+  const button = document.getElementById('btnSyncNow');
+  button.setAttribute('title', easyReadTools.getMessageForLocales('popup_btn_sync_now'));
+  button.addEventListener('click', async () => {
+    if (button.disabled) return;
+    button.disabled = true;
+    showMessages(easyReadTools.getMessageForLocales('popup_sync_running'));
+    try {
+      const result = await chrome.runtime.sendMessage({ command: 'easyreadSync', action: 'now', force: true });
+      if (!result || result.ok !== true) {
+        if (result?.error === 'not_logged_in') {
+          showMessages(easyReadTools.getMessageForLocales('popup_sync_not_signed_in'));
+          chrome.tabs.create({ active: true, url: '/setting/setting.html#sync' });
+          return;
+        }
+        const detail = result?.detail || result?.error || '';
+        showMessages(`${easyReadTools.getMessageForLocales('popup_sync_failed')} ${detail}`.trim());
+        return;
+      }
+      showMessages(easyReadTools.getMessageForLocales('popup_sync_done'));
+    } catch (error) {
+      showMessages(`${easyReadTools.getMessageForLocales('popup_sync_failed')} ${error?.message || error}`.trim());
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
 function onPageLoad_InitReadLaters() {
   document.getElementById("btnReadLaterText").textContent = easyReadTools.getMessageForLocales("popup_btn_read_later_text");
   document.getElementById('readLaterEmpty').textContent = easyReadTools.getMessageForLocales('popup_page_message_no_readlaters');
+  onPageLoad_InitSyncButton();
 
   const btnReadLater = document.getElementById("btnReadLater");
   btnReadLater.addEventListener('click', async () => {

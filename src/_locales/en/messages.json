@@ -32,6 +32,28 @@
   "sync_logout": {
     "message": "Sign out"
   },
+  "sync_test_connection": {
+    "message": "Test connection"
+  },
+  "popup_btn_sync_now": {
+    "message": "Sync",
+    "description": "The popup read later panel."
+  },
+  "popup_sync_running": {
+    "message": "Syncing…"
+  },
+  "popup_sync_done": {
+    "message": "Sync complete."
+  },
+  "popup_sync_failed": {
+    "message": "Sync failed:"
+  },
+  "popup_sync_not_signed_in": {
+    "message": "Sign in to cloud sync first."
+  },
+  "sync_message_test_ok": {
+    "message": "Connected in $1 ms."
+  },
   "sync_status_signed_out": {
     "message": "Not signed in. Create an account first, or sign in if you already have one."
   },

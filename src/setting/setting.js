@@ -366,6 +366,21 @@ async function refreshSyncUi() {
   renderSyncStatus(config, stored[SYNC_STATE_NAME]);
 }
 
+// 可选主机权限：拿到后扩展的请求不再受 CORS 约束。
+// 必须在点击的同一个任务里发起，否则用户手势会失效，所以不放进 run() 的异步体。
+function requestOriginPermission(value) {
+  const origin = endpointOrigin(value);
+  if (!origin) return;
+  try { chrome.permissions.request({ origins: [origin] }).catch(() => {}); } catch { /* 无手势时忽略 */ }
+}
+
+function endpointOrigin(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return null;
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try { return `${new URL(withScheme).origin}/*`; } catch { return null; }
+}
+
 syncEnabledToggle.addEventListener('change', () => run(async () => {
   try {
     await chrome.storage.local.set({ [SYNC_ENABLED_NAME]: syncEnabledToggle.checked });
@@ -381,16 +396,27 @@ for (const [id, action, success] of [
   ['btnSyncRegister', 'register', 'sync_message_register_ok']
 ]) {
   const button = document.getElementById(id);
-  button.addEventListener('click', () => run(async () => {
-    await syncCommand(action, {
-      apiEndpoint: syncApiEndpointInput.value,
-      email: syncEmailInput.value.trim(),
-      password: syncPasswordInput.value
-    });
-    await refreshSyncUi();
-    notify(message(success));
-  }, button));
+  button.addEventListener('click', () => {
+    requestOriginPermission(syncApiEndpointInput.value);
+    run(async () => {
+      await syncCommand(action, {
+        apiEndpoint: syncApiEndpointInput.value,
+        email: syncEmailInput.value.trim(),
+        password: syncPasswordInput.value
+      });
+      await refreshSyncUi();
+      notify(message(success));
+    }, button);
+  });
 }
+
+document.getElementById('btnSyncTest').addEventListener('click', event => {
+  requestOriginPermission(syncApiEndpointInput.value);
+  run(async () => {
+    const { result } = await syncCommand('ping', { apiEndpoint: syncApiEndpointInput.value });
+    notify(message('sync_message_test_ok', [String(result.latency)]));
+  }, event.currentTarget);
+});
 
 document.getElementById('btnSyncNow').addEventListener('click', event => run(async () => {
   await syncCommand('now', { force: true });
@@ -439,7 +465,8 @@ const labels = {
   setting_tab_sync: 'setting_tab_sync', setting_page_notice_sync: 'setting_page_notice_sync',
   syncEnabledTitle: 'sync_enabled_title', syncEnabledDescription: 'sync_enabled_description',
   syncApiEndpointLabel: 'sync_api_endpoint_label', syncEmailLabel: 'sync_email_label', syncPasswordLabel: 'sync_password_label',
-  btnSyncLogin: 'sync_login', btnSyncRegister: 'sync_register', btnSyncNow: 'sync_now', btnSyncLogout: 'sync_logout'
+  btnSyncLogin: 'sync_login', btnSyncRegister: 'sync_register', btnSyncNow: 'sync_now', btnSyncLogout: 'sync_logout',
+  btnSyncTest: 'sync_test_connection'
 };
 for (const element of document.querySelectorAll('[id]')) {
   const key = labels[element.id] || (element.id.startsWith('setting_') ? element.id : element.id.startsWith('btn') ? 'setting_page_' + element.id : null);
