@@ -343,6 +343,10 @@
     "message": "展开或折叠批注栏",
     "description": "浮窗顶部的批注栏展开折叠开关。"
   },
+  "popup_page_top_menu_bar_dashboard_title": {
+    "message": "打开网页端",
+    "description": "The top menu bar."
+  },
   "popup_page_top_menu_bar_setting_title": {
     "message": "设置和备份",
     "description": "The top menu bar."

@@ -343,6 +343,10 @@
     "message": "Expand or collapse annotations",
     "description": "Expand or collapse the annotation sidebar from the popup."
   },
+  "popup_page_top_menu_bar_dashboard_title": {
+    "message": "Open the web dashboard",
+    "description": "The top menu bar."
+  },
   "popup_page_top_menu_bar_setting_title": {
     "message": "Settings & Backup",
     "description": "The top menu bar."

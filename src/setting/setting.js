@@ -211,6 +211,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 refreshDiagnostics().catch(error => notify(error.message, true));
 function openSettingsSection() {
+  if (location.hash === '#sync') {
+    document.getElementById('setting_tab_sync').click();
+    return;
+  }
   if (location.hash !== '#diagnostics') return;
   document.getElementById('setting_tab_general').click();
   const section = document.getElementById('diagnosticsSection');

@@ -1,5 +1,6 @@
 import "../scripts/diagnostics.js";
 import * as easyReadTools from "../scripts/easyReadTools.js";
+import { SYNC_CONFIG_NAME } from '../scripts/easyReadData.mjs';
 import { initializeTabs } from '../scripts/ui.js';
 import { sendPageMessage } from '../scripts/pageConnection.mjs';
 import { initializePopupAnnotations, renderPopupAnnotations } from './popupAnnotations.mjs';
@@ -853,6 +854,16 @@ chrome.runtime.onMessage.addListener((message) => {
 /* -------- Top Menu bar -------- */
 
 function onPageLoad_InitTopMenuBar() {
+
+  const btnOpenDashboard = document.getElementById("btnOpenDashboard");
+  btnOpenDashboard.setAttribute("title", easyReadTools.getMessageForLocales("popup_page_top_menu_bar_dashboard_title"));
+  btnOpenDashboard.setAttribute('aria-label', btnOpenDashboard.title);
+  btnOpenDashboard.addEventListener('click', async () => {
+    const stored = await chrome.storage.local.get(SYNC_CONFIG_NAME);
+    const endpoint = stored[SYNC_CONFIG_NAME]?.apiEndpoint;
+    // 还没配置同步地址时，直接把人带到设置页的同步面板
+    chrome.tabs.create({ active: true, url: endpoint || '/setting/setting.html#sync' });
+  });
 
   const btnSetting = document.getElementById("btnSetting");
   btnSetting.setAttribute("title", easyReadTools.getMessageForLocales("popup_page_top_menu_bar_setting_title"));
