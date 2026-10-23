@@ -1097,7 +1097,6 @@ function onPageLoad_InitFavorites() {
 /* -------- Cloud sync button -------- */
 
 function onPageLoad_InitSyncButton() {
-  const label = document.getElementById('btnSyncNowText');
   const button = document.getElementById('btnSyncNow');
 
   // 未登录时按钮直接标出状态：点它是去设置页登录，避免被当成「同步坏了」
@@ -1105,8 +1104,8 @@ function onPageLoad_InitSyncButton() {
     const stored = await chrome.storage.local.get(SYNC_CONFIG_NAME);
     const key = stored[SYNC_CONFIG_NAME]?.token ? 'popup_btn_sync_now' : 'popup_btn_sync_sign_in';
     const text = easyReadTools.getMessageForLocales(key);
-    label.textContent = text;
     button.setAttribute('title', text);
+    button.setAttribute('aria-label', text);
   };
   refreshSyncButtonState();
 
