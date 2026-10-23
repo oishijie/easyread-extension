@@ -43,11 +43,24 @@
     "message": "Sign in to sync",
     "description": "Popup sync button label when cloud sync is not signed in; clicking opens the sync settings."
   },
+  "popup_btn_sync_last": {
+    "message": "Last sync $last_sync$",
+    "description": "Tooltip suffix on the sync button.",
+    "placeholders": {
+      "last_sync": {
+        "content": "$1",
+        "example": "10/23/2026, 8:15:00 PM"
+      }
+    }
+  },
   "popup_sync_running": {
     "message": "Syncing…"
   },
   "popup_sync_done": {
     "message": "Sync complete."
+  },
+  "popup_sync_done_pushed": {
+    "message": "Sync complete — local changes uploaded."
   },
   "popup_sync_failed": {
     "message": "Sync failed:"

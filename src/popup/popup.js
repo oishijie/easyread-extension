@@ -1,6 +1,6 @@
 import "../scripts/diagnostics.js";
 import * as easyReadTools from "../scripts/easyReadTools.js";
-import { FAVORITES_NAME, SYNC_CONFIG_NAME, createFavoriteUpdate, orderSaveKeys, removeFavoriteEntry } from '../scripts/easyReadData.mjs';
+import { FAVORITE_DELETIONS_NAME, FAVORITES_NAME, SYNC_CONFIG_NAME, addFavoriteDeletion, createFavoriteUpdate, orderSaveKeys, removeFavoriteEntry } from '../scripts/easyReadData.mjs';
 import { initializeTabs } from '../scripts/ui.js';
 import { sendPageMessage } from '../scripts/pageConnection.mjs';
 import { initializePopupAnnotations, renderPopupAnnotations } from './popupAnnotations.mjs';
@@ -1142,6 +1142,7 @@ async function collectCurrentLink() {
 
 async function removeFavorite(pageKey) {
   let message = '';
+  let removed = false;
   await easyReadTools.updateStorageJsonData(
     easyReadTools.keyChainGenerate([FAVORITES_NAME]),
     (queryValue) => {
@@ -1154,8 +1155,14 @@ async function removeFavorite(pageKey) {
         }
       });
       message = result.message;
+      removed = result.status === easyReadTools.UPDATE_STATUS_YES;
       return result;
     });
+  // 记下这次删除，push 时才能让服务端一起删掉；否则下次拉取会把收藏加回来
+  if (removed) {
+    const stored = await chrome.storage.local.get(FAVORITE_DELETIONS_NAME);
+    await chrome.storage.local.set({ [FAVORITE_DELETIONS_NAME]: addFavoriteDeletion(stored[FAVORITE_DELETIONS_NAME], pageKey) });
+  }
   showMessages(message);
   await renderFavorites();
 }
@@ -1177,8 +1184,14 @@ function onPageLoad_InitSyncButton() {
   // 未登录时按钮直接标出状态：点它是去设置页登录，避免被当成「同步坏了」
   const refreshSyncButtonState = async () => {
     const stored = await chrome.storage.local.get(SYNC_CONFIG_NAME);
-    const key = stored[SYNC_CONFIG_NAME]?.token ? 'popup_btn_sync_now' : 'popup_btn_sync_sign_in';
-    const text = easyReadTools.getMessageForLocales(key);
+    const config = stored[SYNC_CONFIG_NAME];
+    let text = easyReadTools.getMessageForLocales(config?.token ? 'popup_btn_sync_now' : 'popup_btn_sync_sign_in');
+    if (config?.token) {
+      const lastSync = config.lastSyncAt
+        ? new Date(config.lastSyncAt).toLocaleString()
+        : easyReadTools.getMessageForLocales('sync_status_never');
+      text = `${text} · ${easyReadTools.getMessageForLocales('popup_btn_sync_last', [lastSync])}`;
+    }
     button.setAttribute('title', text);
     button.setAttribute('aria-label', text);
   };
@@ -1191,8 +1204,9 @@ function onPageLoad_InitSyncButton() {
     try {
       const result = await chrome.runtime.sendMessage({ command: 'easyreadSync', action: 'now', force: true });
       if (!result || result.ok !== true) {
-        if (result?.error === 'not_logged_in') {
-          showMessages(easyReadTools.getMessageForLocales('popup_sync_not_signed_in'));
+        if (result?.error === 'not_logged_in' || result?.error === 'unauthorized') {
+          const key = result.error === 'unauthorized' ? 'sync_error_unauthorized' : 'popup_sync_not_signed_in';
+          showMessages(easyReadTools.getMessageForLocales(key));
           chrome.tabs.create({ active: true, url: '/setting/setting.html#sync' });
           return;
         }
@@ -1200,7 +1214,8 @@ function onPageLoad_InitSyncButton() {
         showMessages(`${easyReadTools.getMessageForLocales('popup_sync_failed')} ${detail}`.trim());
         return;
       }
-      showMessages(easyReadTools.getMessageForLocales('popup_sync_done'));
+      showMessages(easyReadTools.getMessageForLocales(result.result?.pushed ? 'popup_sync_done_pushed' : 'popup_sync_done'));
+      await refreshSyncButtonState();
     } catch (error) {
       showMessages(`${easyReadTools.getMessageForLocales('popup_sync_failed')} ${error?.message || error}`.trim());
     } finally {

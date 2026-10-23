@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  addFavoriteDeletion,
   mergeAllRecords,
   mergeFavorites,
   mergeNotePages,
@@ -134,4 +135,18 @@ test("favorites merge drops tombstoned keys from both sides", () => {
 
   const merged = mergeFavorites(local, remote, ["https://a.com/"]);
   assert.deepEqual(merged.map(item => item.key), ["https://b.com/", "https://c.com/"]);
+});
+
+test("deleted favorites are queued once so the server can tombstone them", () => {
+  const first = addFavoriteDeletion(undefined, "https://a.com/");
+  assert.deepEqual(first, ["https://a.com/"]);
+
+  const again = addFavoriteDeletion(first, "https://a.com/");
+  assert.deepEqual(again, ["https://a.com/"], "same key is not queued twice");
+
+  const second = addFavoriteDeletion(again, "https://b.com/#section");
+  assert.deepEqual(second, ["https://a.com/", "https://b.com/"]);
+
+  assert.deepEqual(addFavoriteDeletion(second, ""), second, "empty keys are ignored");
+  assert.deepEqual(addFavoriteDeletion(null, "https://c.com/"), ["https://c.com/"]);
 });

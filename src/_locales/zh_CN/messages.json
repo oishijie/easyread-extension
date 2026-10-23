@@ -43,11 +43,24 @@
     "message": "登录后同步",
     "description": "Popup sync button label when cloud sync is not signed in; clicking opens the sync settings."
   },
+  "popup_btn_sync_last": {
+    "message": "上次同步 $last_sync$",
+    "description": "Tooltip suffix on the sync button.",
+    "placeholders": {
+      "last_sync": {
+        "content": "$1",
+        "example": "2026/10/23 20:15:00"
+      }
+    }
+  },
   "popup_sync_running": {
     "message": "正在同步…"
   },
   "popup_sync_done": {
     "message": "同步完成。"
+  },
+  "popup_sync_done_pushed": {
+    "message": "同步完成，本地改动已上传。"
   },
   "popup_sync_failed": {
     "message": "同步失败："

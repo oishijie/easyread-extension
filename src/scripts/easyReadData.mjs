@@ -13,6 +13,15 @@ export const SYNC_ENABLED_NAME = "syncEnabled";
 export const SYNC_STATE_NAME = "syncState";
 export const SYNC_DIRTY_NAME = "syncDirty";
 export const FAVORITES_NAME = "favorites";
+// 本地删掉的收藏键：push 时要一起上报，否则服务端那条还在，下次拉取会把收藏「复活」
+export const FAVORITE_DELETIONS_NAME = "favoriteDeletions";
+
+export function addFavoriteDeletion(existing, key) {
+  const list = Array.isArray(existing) ? existing : [];
+  const normalized = syncPageKey(key);
+  if (!normalized || list.includes(normalized)) return list;
+  return [...list, normalized];
+}
 
 // 保存网页面板条目的顺序：未知键丢弃，未记录过的键（版本升级新增）补到末尾
 export function orderSaveKeys(storedOrder, availableKeys) {

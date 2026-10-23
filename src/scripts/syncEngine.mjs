@@ -1,5 +1,6 @@
 import {
   ALL_RECORDS_NAME,
+  FAVORITE_DELETIONS_NAME,
   FAVORITES_NAME,
   NOTES_NAME,
   READ_LATERS_NAME,
@@ -130,14 +131,18 @@ export async function signOut() {
 }
 
 async function push(config) {
-  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME, NOTES_NAME, FAVORITES_NAME]);
+  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME, NOTES_NAME, FAVORITES_NAME, FAVORITE_DELETIONS_NAME]);
+  const deletions = Array.isArray(stored[FAVORITE_DELETIONS_NAME]) ? stored[FAVORITE_DELETIONS_NAME] : [];
   const body = {
     readLaters: Array.isArray(stored[READ_LATERS_NAME]) ? stored[READ_LATERS_NAME] : [],
     allRecords: stored[ALL_RECORDS_NAME] && typeof stored[ALL_RECORDS_NAME] === 'object' ? stored[ALL_RECORDS_NAME] : {},
     notes: stored[NOTES_NAME] && typeof stored[NOTES_NAME] === 'object' ? stored[NOTES_NAME] : {},
-    favorites: Array.isArray(stored[FAVORITES_NAME]) ? stored[FAVORITES_NAME] : []
+    favorites: Array.isArray(stored[FAVORITES_NAME]) ? stored[FAVORITES_NAME] : [],
+    favoriteDeletions: deletions
   };
   const result = await request(config, '/api/sync/full', { method: 'POST', body: JSON.stringify(body) });
+  // 服务端已把这些删除落成墓碑，本地待上报队列可以清了
+  if (deletions.length) await chrome.storage.local.set({ [FAVORITE_DELETIONS_NAME]: [] });
   await setDirty(false);
   return result;
 }
