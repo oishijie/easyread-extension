@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_manifest_name__",
   "description": "__MSG_manifest_description__",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "icons": {
     "16": "assets/logo/icon-16.png",
     "32": "assets/logo/icon-32.png",
@@ -64,5 +64,5 @@
   "author": {
     "email": "eeee6688@hotmail.com"
   },
-  "homepage_url": "https://github.com/volnet/chrome-extensions-easyread"
+  "homepage_url": "https://github.com/oishijie/easyread-extension"
 }
