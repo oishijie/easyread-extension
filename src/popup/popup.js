@@ -1008,10 +1008,18 @@ function updateStorageCallback_ReadLaterRemove(queryValue, context) {
 
 function onPageLoad_InitSyncButton() {
   const label = document.getElementById('btnSyncNowText');
-  label.textContent = easyReadTools.getMessageForLocales('popup_btn_sync_now');
-
   const button = document.getElementById('btnSyncNow');
-  button.setAttribute('title', easyReadTools.getMessageForLocales('popup_btn_sync_now'));
+
+  // 未登录时按钮直接标出状态：点它是去设置页登录，避免被当成「同步坏了」
+  const refreshSyncButtonState = async () => {
+    const stored = await chrome.storage.local.get(SYNC_CONFIG_NAME);
+    const key = stored[SYNC_CONFIG_NAME]?.token ? 'popup_btn_sync_now' : 'popup_btn_sync_sign_in';
+    const text = easyReadTools.getMessageForLocales(key);
+    label.textContent = text;
+    button.setAttribute('title', text);
+  };
+  refreshSyncButtonState();
+
   button.addEventListener('click', async () => {
     if (button.disabled) return;
     button.disabled = true;

@@ -39,6 +39,10 @@
     "message": "Sync",
     "description": "The popup read later panel."
   },
+  "popup_btn_sync_sign_in": {
+    "message": "Sign in to sync",
+    "description": "Popup sync button label when cloud sync is not signed in; clicking opens the sync settings."
+  },
   "popup_sync_running": {
     "message": "Syncing…"
   },
