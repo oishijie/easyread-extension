@@ -9,6 +9,7 @@ import {
   READ_STATUS_READING,
   READ_STATUS_UNREAD
 } from "../src/scripts/easyReadData.mjs";
+import { normalizeEndpoint } from "../src/scripts/syncEngine.mjs";
 
 test("read later merge keeps the highest status and never downgrades", () => {
   const local = [
@@ -96,4 +97,11 @@ test("notes merge removes deleted note ids and drops the empty page", () => {
   const merged = mergeNotePages(local, {}, ["n3"]);
   assert.equal(merged["https://j.com/"], undefined);
   assert.equal(merged["https://k.com/"].notes.length, 1);
+});
+
+test("endpoint normalization adds a scheme and trims trailing slashes", () => {
+  assert.equal(normalizeEndpoint("example.workers.dev/"), "https://example.workers.dev");
+  assert.equal(normalizeEndpoint("https://a.com///"), "https://a.com");
+  assert.equal(normalizeEndpoint("http://b.com"), "http://b.com");
+  assert.equal(normalizeEndpoint("   "), "");
 });

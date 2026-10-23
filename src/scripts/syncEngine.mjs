@@ -21,7 +21,10 @@ let running = null;
 let suppressUntil = 0;
 
 export function normalizeEndpoint(value) {
-  return String(value ?? '').trim().replace(/\/+$/, '');
+  const trimmed = String(value ?? '').trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  // 用户往往只填域名，没带协议
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
 export async function getSyncConfig() {
