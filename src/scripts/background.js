@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
       default:
         reply({ ok: false, error: 'Unknown sync action' });
     }
-  })().catch(error => reply({ ok: false, error: error?.code || error?.message || String(error) }));
+  })().catch(error => reply({ ok: false, error: error?.code || 'unknown', detail: error?.message || String(error) }));
   return true;
 });
 
@@ -257,7 +257,7 @@ function updateStorageCallback_AllRecordsPosition(queryValue, context) {
 // add a Listener to add
 // receive the page position.
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
-  if (message?.command === 'easyreadLocaleDictionary' || message?.command === 'easyreadNotes') return;
+  if (message?.command === 'easyreadLocaleDictionary' || message?.command === 'easyreadNotes' || message?.command === 'easyreadSync') return;
   if (message?.command === 'openAnnotationPopup') {
     if (!sender.tab?.id) return;
     (async () => {

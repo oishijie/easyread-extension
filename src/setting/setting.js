@@ -313,8 +313,17 @@ const syncErrorKeys = {
 
 async function syncCommand(action, data = {}) {
   const result = await chrome.runtime.sendMessage({ command: 'easyreadSync', action, ...data });
-  if (!result || result.ok === false || result.error) throw new Error(result?.error || message('ui_operation_failed'));
+  // 严格判定：其它监听器可能先同步回复一个非对象值，那种情况必须当失败
+  if (!result || typeof result !== 'object' || result.ok !== true) {
+    throw new Error(describeSyncError(result?.error, result?.detail));
+  }
   return result;
+}
+
+function describeSyncError(code, detail) {
+  const localized = code ? message(`sync_error_${String(code).toLowerCase()}`) : '';
+  if (localized) return localized;
+  return detail || code || message('ui_operation_failed');
 }
 
 function renderSyncStatus(config, state) {
