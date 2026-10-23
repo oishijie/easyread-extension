@@ -33,7 +33,7 @@
     "message": "退出登录"
   },
   "sync_status_signed_out": {
-    "message": "未登录。"
+    "message": "未登录。首次使用请先点「注册」创建账号，已有账号直接点「登录」。"
   },
   "sync_status_signed_in": {
     "message": "已登录 $1 · 上次同步 $2"
@@ -58,6 +58,18 @@
   },
   "sync_error_login_failed": {
     "message": "登录失败。"
+  },
+  "sync_error_bad_credentials": {
+    "message": "邮箱或密码错误。还没有账号的话请先点「注册」。"
+  },
+  "sync_error_account_exists": {
+    "message": "该邮箱已注册，请直接点「登录」。"
+  },
+  "sync_error_password_short": {
+    "message": "密码至少 8 位。"
+  },
+  "sync_error_missing_fields": {
+    "message": "邮箱和密码都要填。"
   },
   "sync_error_network": {
     "message": "无法连接 API 地址。"

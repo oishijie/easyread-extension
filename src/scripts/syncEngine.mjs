@@ -84,10 +84,18 @@ async function request(config, path, options = {}) {
 
 export async function signIn({ apiEndpoint, email, password, register = false }) {
   const config = await saveSyncConfig({ apiEndpoint });
-  const data = await request({ ...config, token: '' }, register ? '/api/auth/register' : '/api/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password })
-  });
+  let data;
+  try {
+    data = await request({ ...config, token: '' }, register ? '/api/auth/register' : '/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+  } catch (error) {
+    // 登录时的 401 是账号或密码不对，不是会话失效，两者提示不能混用
+    if (error?.status === 401) throw Object.assign(new Error(error.message), { code: 'bad_credentials' });
+    if (error?.code === 'CONFLICT') throw Object.assign(new Error(error.message), { code: 'account_exists' });
+    throw error;
+  }
   if (!data?.token) throw Object.assign(new Error('Login returned no token'), { code: 'login_failed' });
   const next = await saveSyncConfig({ token: data.token, userId: data.user_id || '', email, lastSyncAt: 0 });
   // 新登录的账号需要把本地已有数据先推上去

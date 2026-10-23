@@ -33,7 +33,7 @@
     "message": "Sign out"
   },
   "sync_status_signed_out": {
-    "message": "Not signed in."
+    "message": "Not signed in. Create an account first, or sign in if you already have one."
   },
   "sync_status_signed_in": {
     "message": "Signed in as $1 · Last synced $2"
@@ -58,6 +58,18 @@
   },
   "sync_error_login_failed": {
     "message": "Sign-in failed."
+  },
+  "sync_error_bad_credentials": {
+    "message": "Incorrect email or password. If you have no account yet, create one first."
+  },
+  "sync_error_account_exists": {
+    "message": "This email is already registered — sign in instead."
+  },
+  "sync_error_password_short": {
+    "message": "Password must be at least 8 characters."
+  },
+  "sync_error_missing_fields": {
+    "message": "Enter both the email and the password."
   },
   "sync_error_network": {
     "message": "Cannot reach the API endpoint."

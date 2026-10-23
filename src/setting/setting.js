@@ -321,8 +321,13 @@ async function syncCommand(action, data = {}) {
 }
 
 function describeSyncError(code, detail) {
-  const localized = code ? message(`sync_error_${String(code).toLowerCase()}`) : '';
-  if (localized) return localized;
+  const normalized = String(code || '').toLowerCase();
+  if (normalized === 'invalid_request') {
+    if (/8 characters/i.test(detail || '')) return message('sync_error_password_short');
+    if (/required/i.test(detail || '')) return message('sync_error_missing_fields');
+  }
+  const localized = code ? message(`sync_error_${normalized}`) : '';
+  if (localized) return detail && detail !== code ? `${localized} (${detail})` : localized;
   return detail || code || message('ui_operation_failed');
 }
 
@@ -378,7 +383,6 @@ for (const [id, action, success] of [
       email: syncEmailInput.value.trim(),
       password: syncPasswordInput.value
     });
-    syncPasswordInput.value = '';
     await refreshSyncUi();
     notify(message(success));
   }, button));
