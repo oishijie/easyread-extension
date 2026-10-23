@@ -369,6 +369,24 @@ export function mergeReadLaters(localItems, remoteItems, deletedKeys = []) {
   return [...merged.values()];
 }
 
+// 收藏按 key 去重合并，远端只补本地缺失的字段，不做字段级覆盖；墓碑里的直接删除。
+export function mergeFavorites(localItems, remoteItems, deletedKeys = []) {
+  const merged = new Map();
+  for (const item of Array.isArray(localItems) ? localItems : []) {
+    const key = syncPageKey(item?.key || item?.url);
+    if (key) merged.set(key, { ...item });
+  }
+  for (const item of Array.isArray(remoteItems) ? remoteItems : []) {
+    const key = syncPageKey(item?.key || item?.url);
+    if (!key || merged.has(key)) continue;
+    merged.set(key, { ...item });
+  }
+  for (const key of Array.isArray(deletedKeys) ? deletedKeys : []) {
+    merged.delete(syncPageKey(key));
+  }
+  return [...merged.values()];
+}
+
 // 访问记录按页面累积，datetimes 取并集去重；其余字段本地优先。
 export function mergeAllRecords(localRecords, remoteRecords) {
   const merged = {};

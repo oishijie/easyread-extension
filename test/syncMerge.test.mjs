@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   mergeAllRecords,
+  mergeFavorites,
   mergeNotePages,
   mergeReadLaters,
   READ_STATUS_READED,
@@ -104,4 +105,33 @@ test("endpoint normalization adds a scheme and trims trailing slashes", () => {
   assert.equal(normalizeEndpoint("https://a.com///"), "https://a.com");
   assert.equal(normalizeEndpoint("http://b.com"), "http://b.com");
   assert.equal(normalizeEndpoint("   "), "");
+});
+
+test("favorites merge unions both sides by key without overwriting local fields", () => {
+  const local = [
+    { key: "https://a.com/", url: "https://a.com/", title: "Local A", createDateTime: 1 }
+  ];
+  const remote = [
+    { key: "https://a.com/", url: "https://a.com/", title: "Cloud A", createDateTime: 1 },
+    { key: "https://b.com/", url: "https://b.com/", title: "B", createDateTime: 2 }
+  ];
+
+  const merged = mergeFavorites(local, remote);
+  assert.equal(merged.length, 2);
+  assert.equal(merged[0].title, "Local A", "local fields win on conflict");
+  assert.equal(merged[1].key, "https://b.com/");
+});
+
+test("favorites merge drops tombstoned keys from both sides", () => {
+  const local = [
+    { key: "https://a.com/", url: "https://a.com/", title: "A", createDateTime: 1 },
+    { key: "https://b.com/", url: "https://b.com/", title: "B", createDateTime: 2 }
+  ];
+  const remote = [
+    { key: "https://b.com/", url: "https://b.com/", title: "B", createDateTime: 2 },
+    { key: "https://c.com/", url: "https://c.com/", title: "C", createDateTime: 3 }
+  ];
+
+  const merged = mergeFavorites(local, remote, ["https://a.com/"]);
+  assert.deepEqual(merged.map(item => item.key), ["https://b.com/", "https://c.com/"]);
 });

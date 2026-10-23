@@ -1,6 +1,6 @@
 import './diagnostics.js';
 import * as easyReadTools from './easyReadTools.js';
-import { ALL_RECORDS_NAME, NOTES_NAME, READ_LATERS_NAME, SYNC_ENABLED_NAME, applyVideoProgress, createTabNavigationTracker } from './easyReadData.mjs';
+import { ALL_RECORDS_NAME, FAVORITES_NAME, NOTES_NAME, READ_LATERS_NAME, SYNC_ENABLED_NAME, applyVideoProgress, createTabNavigationTracker } from './easyReadData.mjs';
 
 import { migrateNotes, notesOperation, withNotesLock } from './notesStore.mjs';
 import { sendPageMessage } from './pageConnection.mjs';
@@ -43,7 +43,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     // 首次开启时把已有数据推上去
     if (syncEnabled) await notifyLocalChange();
   }
-  if (!(changes[READ_LATERS_NAME] || changes[ALL_RECORDS_NAME] || changes[NOTES_NAME])) return;
+  if (!(changes[READ_LATERS_NAME] || changes[ALL_RECORDS_NAME] || changes[NOTES_NAME] || changes[FAVORITES_NAME])) return;
   await syncEnabledReady;
   if (!syncEnabled) return;
   // 拉取回写本地时不算本地改动，否则会和云端互相触发。

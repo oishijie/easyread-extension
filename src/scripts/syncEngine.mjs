@@ -1,11 +1,13 @@
 import {
   ALL_RECORDS_NAME,
+  FAVORITES_NAME,
   NOTES_NAME,
   READ_LATERS_NAME,
   SYNC_CONFIG_NAME,
   SYNC_DIRTY_NAME,
   SYNC_STATE_NAME,
   mergeAllRecords,
+  mergeFavorites,
   mergeReadLaters
 } from './easyReadData.mjs';
 import { applyRemoteNotes } from './notesStore.mjs';
@@ -128,11 +130,12 @@ export async function signOut() {
 }
 
 async function push(config) {
-  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME, NOTES_NAME]);
+  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME, NOTES_NAME, FAVORITES_NAME]);
   const body = {
     readLaters: Array.isArray(stored[READ_LATERS_NAME]) ? stored[READ_LATERS_NAME] : [],
     allRecords: stored[ALL_RECORDS_NAME] && typeof stored[ALL_RECORDS_NAME] === 'object' ? stored[ALL_RECORDS_NAME] : {},
-    notes: stored[NOTES_NAME] && typeof stored[NOTES_NAME] === 'object' ? stored[NOTES_NAME] : {}
+    notes: stored[NOTES_NAME] && typeof stored[NOTES_NAME] === 'object' ? stored[NOTES_NAME] : {},
+    favorites: Array.isArray(stored[FAVORITES_NAME]) ? stored[FAVORITES_NAME] : []
   };
   const result = await request(config, '/api/sync/full', { method: 'POST', body: JSON.stringify(body) });
   await setDirty(false);
@@ -142,9 +145,10 @@ async function push(config) {
 async function applyPull(data) {
   suppressUntil = Date.now() + APPLY_SUPPRESS_MS;
 
-  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME]);
+  const stored = await chrome.storage.local.get([READ_LATERS_NAME, ALL_RECORDS_NAME, FAVORITES_NAME]);
   const deletedKeys = Array.isArray(data?.deletedIds?.readLaters) ? data.deletedIds.readLaters : [];
   const deletedNoteIds = Array.isArray(data?.deletedIds?.notes) ? data.deletedIds.notes : [];
+  const deletedFavoriteKeys = Array.isArray(data?.deletedIds?.favorites) ? data.deletedIds.favorites : [];
 
   const updates = {};
 
@@ -156,11 +160,15 @@ async function applyPull(data) {
   const nextRecords = mergeAllRecords(localRecords, data?.allRecords || {});
   if (JSON.stringify(nextRecords) !== JSON.stringify(localRecords)) updates[ALL_RECORDS_NAME] = nextRecords;
 
+  const localFavorites = Array.isArray(stored[FAVORITES_NAME]) ? stored[FAVORITES_NAME] : [];
+  const nextFavorites = mergeFavorites(localFavorites, data?.favorites || [], deletedFavoriteKeys);
+  if (JSON.stringify(nextFavorites) !== JSON.stringify(localFavorites)) updates[FAVORITES_NAME] = nextFavorites;
+
   if (Object.keys(updates).length) await chrome.storage.local.set(updates);
   await applyRemoteNotes(data?.notes || {}, deletedNoteIds);
 
   suppressUntil = Date.now() + APPLY_SUPPRESS_MS;
-  return { readLaters: nextReadLaters.length, records: Object.keys(nextRecords).length };
+  return { readLaters: nextReadLaters.length, records: Object.keys(nextRecords).length, favorites: nextFavorites.length };
 }
 
 // force=true 时无条件上传本地全量；否则只在本地有改动时上传，避免每轮同步都写库。
