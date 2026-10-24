@@ -123,7 +123,9 @@ async function run(action, button) {
   try { await action(); }
   catch (error) {
     const fallback = message('ui_operation_failed');
-    notify(error.message && error.message !== fallback ? `${fallback} ${error.message}` : fallback, true);
+    // 具体原因比通用前缀有用：同步失败时用户需要看到「请先登录」，而不是又被叫去重试
+    const detail = error?.message;
+    notify(detail && detail !== fallback ? detail : fallback, true);
     globalThis.EasyReadDiagnostics?.record(error, { source: 'settings' }, output);
   } finally {
     busy = false;
@@ -325,7 +327,9 @@ async function syncCommand(action, data = {}) {
   const result = await chrome.runtime.sendMessage({ command: 'easyreadSync', action, ...data });
   // 严格判定：其它监听器可能先同步回复一个非对象值，那种情况必须当失败
   if (!result || typeof result !== 'object' || result.ok !== true) {
-    throw new Error(describeSyncError(result?.error, result?.detail));
+    const error = new Error(describeSyncError(result?.error, result?.detail));
+    error.code = result?.error;
+    throw error;
   }
   return result;
 }
@@ -424,11 +428,32 @@ document.getElementById('btnSyncTest').addEventListener('click', event => {
   }, event.currentTarget);
 });
 
-document.getElementById('btnSyncNow').addEventListener('click', event => run(async () => {
-  await syncCommand('now', { force: true });
-  await refreshSyncUi();
-  notify(message('sync_message_done'));
-}, event.currentTarget));
+document.getElementById('btnSyncNow').addEventListener('click', event => {
+  requestOriginPermission(syncApiEndpointInput.value);
+  run(async () => {
+    const stored = await chrome.storage.local.get(SYNC_CONFIG_NAME);
+    const email = syncEmailInput.value.trim();
+    const password = syncPasswordInput.value;
+    const credentials = email && password
+      ? { apiEndpoint: syncApiEndpointInput.value, email, password }
+      : null;
+    // 填了凭据却没登录，或会话已过期时，用输入框里的凭据登录一次，而不是把用户打发去点「登录」
+    if (!stored[SYNC_CONFIG_NAME]?.token && credentials) {
+      await syncCommand('login', credentials);
+      await refreshSyncUi();
+    }
+    try {
+      await syncCommand('now', { force: true });
+    } catch (error) {
+      if (error?.code !== 'unauthorized' || !credentials) throw error;
+      await syncCommand('login', credentials);
+      await refreshSyncUi();
+      await syncCommand('now', { force: true });
+    }
+    await refreshSyncUi();
+    notify(message('sync_message_done'));
+  }, event.currentTarget);
+});
 
 document.getElementById('btnSyncLogout').addEventListener('click', event => run(async () => {
   await syncCommand('logout');

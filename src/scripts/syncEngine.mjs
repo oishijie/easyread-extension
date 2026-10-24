@@ -14,7 +14,7 @@ import {
 import { applyRemoteNotes } from './notesStore.mjs';
 
 const DEFAULT_CONFIG = { apiEndpoint: '', token: '', userId: '', email: '', lastSyncAt: 0 };
-const REQUEST_TIMEOUT_MS = 12000;
+const REQUEST_TIMEOUT_MS = 20000;
 const DEBOUNCE_MS = 5000;
 // 拉取会写本地存储，期间触发的 onChanged 不应再算作本地改动，否则会自激同步。
 const APPLY_SUPPRESS_MS = 2000;
@@ -74,7 +74,7 @@ async function request(config, path, options = {}) {
   } catch (error) {
     // 超时和连不上要分开报，否则用户没法判断是网络还是服务端
     if (controller.signal.aborted) {
-      throw Object.assign(new Error(`${endpoint} 在 ${REQUEST_TIMEOUT_MS / 1000} 秒内没有响应`), { code: 'timeout' });
+      throw Object.assign(new Error(`${endpoint} 在 ${REQUEST_TIMEOUT_MS / 1000} 秒内没有响应（检查网络或代理后重试）`), { code: 'timeout' });
     }
     throw Object.assign(new Error(`${error?.message || 'Network error'}（${endpoint}）`), { code: 'network' });
   } finally {
